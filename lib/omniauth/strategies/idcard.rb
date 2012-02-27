@@ -12,6 +12,7 @@ module OmniAuth
       
       info do
         {
+          'uid' => uid,
           'user_info' => {
             'personal_code' => @user_data['serialNumber'],
             'first_name' => @user_data['GN'],
@@ -28,9 +29,10 @@ module OmniAuth
           
           @user_data = parse_client_certificate(@env['SSL_CLIENT_CERT'])
           @env['REQUEST_METHOD'] = 'GET'
+          @env['omniauth.auth'] = info
           @env['PATH_INFO'] = "#{OmniAuth.config.path_prefix}/#{name}/callback"
           
-          debug "ID-Card request was authenticated successfully. User data: #{auth_hash.inspect}"
+          debug "ID-Card request was authenticated successfully. User data: #{info.inspect}"
           
           call_app!
         else
