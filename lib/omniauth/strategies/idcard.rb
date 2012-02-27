@@ -1,6 +1,5 @@
 require 'omniauth-oauth'
 require 'openssl'
-require 'yaml'
 
 module OmniAuth
   module Strategies
@@ -42,7 +41,7 @@ module OmniAuth
       
       def parse_client_certificate(data)
         cert = OpenSSL::X509::Certificate.new(data)
-        subject_dn = YAML.unescape(cert.subject.to_s.scan(/./mu) {|s| s[0].chr })
+        subject_dn = cert.subject.to_s.scan(/./mu) {|s| s[0].chr}
         
         debug "Subject DN: #{subject_dn}"
         
