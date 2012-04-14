@@ -37,7 +37,7 @@ module OmniAuth
           call_app!
         else
           debug "Could not authenticate with ID-Card. Certificate is missing."
-          fail!(:client_certificate_missing, {'error' => 'Client certificate is missing'})
+          fail!(:client_certificate_missing)
         end
       end
       
