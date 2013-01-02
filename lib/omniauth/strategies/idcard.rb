@@ -41,15 +41,27 @@ module OmniAuth
         end
       end
       
+      def unescape(value)
+        value.gsub( /\\(?:([nevfbart\\])|0?x([0-9a-fA-F]{2})|u([0-9a-fA-F]{4}))/ ) {
+        if $3
+          ["#$3".hex ].pack('U*')
+        elsif $2
+          [$2].pack( "H2" )
+        else
+          UNESCAPES[$1]
+        end
+      }
+      end
+
       def parse_client_certificate(data)
         cert = OpenSSL::X509::Certificate.new(data)
-        subject_dn = cert.subject.to_s.scan(/./mu) {|s| s[0].chr}
-        
+        subject_dn = unescape(cert.subject.to_s).unpack("C*").pack("U*").scan(/./mu) {|s| s[0].chr }
+
         debug "Subject DN: #{subject_dn}"
-        
-        subject_dn.split('/').inject(Hash.new) do |memo, part|
+
+        subject_dn.mb_chars.split('/').inject(Hash.new) do |memo, part|
           item = part.split('=')
-          memo[item.first] = item.last
+          memo[item.first.to_s] = item.last
           memo
         end
       end
