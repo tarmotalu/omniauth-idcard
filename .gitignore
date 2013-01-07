@@ -2,3 +2,7 @@
 .bundle
 Gemfile.lock
 pkg/*
+coverage/*
+tmp/*
+.DS_Store
+spec/certificates/*

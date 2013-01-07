@@ -55,13 +55,19 @@ module OmniAuth
 
       def parse_client_certificate(data)
         cert = OpenSSL::X509::Certificate.new(data)
-        subject_dn = unescape(cert.subject.to_s).unpack("C*").pack("U*").scan(/./mu) {|s| s[0].chr }
-
+        
+        # from 2011-07-01 Common Name is encoded in UTF-8        
+        subject_dn = if cert.not_before.to_date >= Date.parse('2011-07-01')
+          unescape(cert.subject.to_s).force_encoding('UTF-8')
+        else
+          unescape(cert.subject.to_s).unpack("C*").pack("U*").scan(/./mu) {|s| s[0].chr }.gsub("\u0000", '')
+        end
+        
         debug "Subject DN: #{subject_dn}"
-
-        subject_dn.mb_chars.split('/').inject(Hash.new) do |memo, part|
+                
+        subject_dn.split('/').inject(Hash.new) do |memo, part|
           item = part.split('=')
-          memo[item.first.to_s] = item.last
+          memo[item.first.to_s] = item.last if item.last
           memo
         end
       end
