@@ -23,7 +23,7 @@ module OmniAuth
       end
 
       def request_phase
-        if @env['SSL_CLIENT_CERT'] != ''
+        if @env['SSL_CLIENT_CERT'] && @env['SSL_CLIENT_CERT'] != ''
           debug "Start authentication with ID-Card. Got certificate:"
           debug @env['SSL_CLIENT_CERT']
 
