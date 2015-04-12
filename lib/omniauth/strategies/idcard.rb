@@ -7,6 +7,8 @@ module OmniAuth
 
       option :name, 'idcard'
       option :logger, nil
+      # Name of variable where webserver (Apache, Nginx) will forwart client PEM certificate
+      option :cert_variable, 'SSL_CLIENT_CERT'
 
       uid { @user_data['serialNumber'] }
 
@@ -23,11 +25,11 @@ module OmniAuth
       end
 
       def request_phase
-        if @env['SSL_CLIENT_CERT'] && @env['SSL_CLIENT_CERT'] != ''
-          debug "Start authentication with ID-Card. Got certificate:"
-          debug @env['SSL_CLIENT_CERT']
+        if @env[cert_variable] && @env[cert_variable] != ''
+          debug "Start authentication with ID-Card. Got certificate from request #{cert_variable}:"
+          debug @env[cert_variable]
 
-          @user_data = parse_client_certificate(@env['SSL_CLIENT_CERT'])
+          @user_data = parse_client_certificate(@env[cert_variable])
           @env['REQUEST_METHOD'] = 'GET'
           @env['omniauth.auth'] = info
           @env['PATH_INFO'] = "#{OmniAuth.config.path_prefix}/#{name}/callback"
@@ -36,7 +38,7 @@ module OmniAuth
 
           call_app!
         else
-          debug "Could not authenticate with ID-Card. Certificate is missing."
+          debug "Could not authenticate with ID-Card. Certificate is missing in request variable #{cert_variable}."
           fail!(:client_certificate_missing)
         end
       end
@@ -77,6 +79,10 @@ module OmniAuth
       end
 
       private
+
+      def cert_variable
+        options[:cert_variable]
+      end
 
       def debug(message)
         options[:logger].debug("#{Time.now} #{message}") if options[:logger]
